@@ -7,6 +7,9 @@ const studentRoutes = require("./src/router/student_router");
 const authController = require('./src/router/auth_router');
 const adminRoutes = require("./src/router/admin_routes");
 
+//Teacher QR Code generate Router
+const qrAttendanceRouter = require("./src/router/qr_attendance_router");
+
 dotenv.config();
 const app = express();
 
@@ -18,12 +21,14 @@ app.use(express.urlencoded({ extended: true })); // Handle form-urlencoded
 app.use("/api/students", studentRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api",authController);
+app.use("/api",qrAttendanceRouter);
 //app.use("/api/auth", authRoutes); // login/logout ke liye
+
 
 // ✅ Start Server
 const PORT = process.env.PORT || 5000;
 connectDB().then(() => {
-  app.listen(PORT, () =>
-    console.log(`🚀 Server running on http://localhost:${PORT}`)
+   app.listen(PORT, "0.0.0.0", () =>
+    console.log(`🚀 Server running on http://0.0.0.0:${PORT}`)
   );
 });
