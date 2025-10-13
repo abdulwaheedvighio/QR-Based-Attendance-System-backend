@@ -1,10 +1,21 @@
 const haversine = require("haversine-distance");
 
-function calculateDistance(teacherLocation,     ){
-    return haversine(
-        {lat: teacherLocation.latitude, lon: teacherLocation.longitude },
-        {lat: studentLocation.latitude, lon: studentLocation.longitude},
-    );  
-}
-module.exports = {calculateDistance};
+// ✅ Function to calculate distance between two points (in meters)
+function calculateDistance(studentLocation, teacherLocation) {
+  if (!studentLocation || !teacherLocation) return Infinity;
 
+  const student = {
+    lat: studentLocation.latitude,
+    lon: studentLocation.longitude,
+  };
+
+  const teacher = {
+    lat: teacherLocation.latitude,
+    lon: teacherLocation.longitude,
+  };
+
+  // 📏 Distance in meters
+  return haversine(student, teacher);
+}
+
+module.exports = { calculateDistance };

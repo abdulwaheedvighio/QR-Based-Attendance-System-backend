@@ -10,6 +10,8 @@ const adminRoutes = require("./src/router/admin_routes");
 //Teacher QR Code generate Router
 const qrAttendanceRouter = require("./src/router/qr_attendance_router");
 
+const departmentRouter = require('./src/router/department_router');
+const subjectRouter = require("./src/router/subject_router");
 dotenv.config();
 const app = express();
 
@@ -22,6 +24,11 @@ app.use("/api/students", studentRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api",authController);
 app.use("/api",qrAttendanceRouter);
+
+app.use("/api/admin",departmentRouter);
+app.use("/api/admin",subjectRouter);
+
+
 //app.use("/api/auth", authRoutes); // login/logout ke liye
 
 

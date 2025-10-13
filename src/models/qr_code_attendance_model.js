@@ -7,7 +7,7 @@ const QRCodeSchema = new Schema(
       type: String,
       required: true,
       unique: true, // unique token that will be encoded into QR
-      index: true,
+      // ❌ index: true — not needed, unique already creates index
     },
 
     teacher: {
@@ -67,9 +67,10 @@ const QRCodeSchema = new Schema(
 // ✅ TTL index: Mongo will automatically remove documents when expiresAt passes
 QRCodeSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
-// Extra helpful indexes for faster lookups
+// ✅ Keep only essential extra indexes
 QRCodeSchema.index({ teacher: 1, isActive: 1 });
-QRCodeSchema.index({ token: 1 });
+
+// ⚠️ Removed duplicate token index to fix warning
 
 // =========================
 // Instance Methods
