@@ -6,7 +6,7 @@ const router = express.Router();
 
 router.post('/add-subject',authMiddleware,isAdmin ,addSubject);
 router.get('/get-allSubjects',authMiddleware,getAllSubjects);
-router.patch("/assign-teacher", authMiddleware, isAdmin, assignTeacherToSubject);
+router.put("/assign-teacher", authMiddleware, isAdmin, assignTeacherToSubject);
 
 
 module.exports = router;

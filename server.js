@@ -12,6 +12,8 @@ const qrAttendanceRouter = require("./src/router/qr_attendance_router");
 
 const departmentRouter = require('./src/router/department_router');
 const subjectRouter = require("./src/router/subject_router");
+
+const semesterRouter = require("./src/router/semester_router");
 dotenv.config();
 const app = express();
 
@@ -29,6 +31,7 @@ app.use("/api/admin",departmentRouter);
 app.use("/api/admin",subjectRouter);
 
 
+app.use("/api/admin",semesterRouter);
 //app.use("/api/auth", authRoutes); // login/logout ke liye
 
 

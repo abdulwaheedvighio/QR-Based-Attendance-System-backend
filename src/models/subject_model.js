@@ -4,23 +4,28 @@ const SubjectSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: [true, "Subject Name is required"],
+      required: [true, "Subject name is required"],
       trim: true,
     },
     code: {
       type: String,
-      required: [true, "Subject Code is required"],
+      required: [true, "Subject code is required"],
       unique: true,
       trim: true,
     },
     department: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Department",
-        required: true,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Department",
+      required: true,
+    },
+    semester: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Semester",
+      required: true,
     },
     assignedTeacher: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Teacher", // ✅ Teacher who teaches this subject
+      ref: "Teacher",
       default: null,
     },
     description: {
