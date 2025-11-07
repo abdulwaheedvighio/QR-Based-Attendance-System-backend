@@ -2,15 +2,14 @@ const mongoose = require("mongoose");
 
 const attendanceSchema = new mongoose.Schema(
   {
-    // 🔹 Basic References
     student: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User", // Or "Student" if you have separate model
+      ref: "Student",
       required: true,
     },
     teacher: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: "Teacher",
       required: true,
     },
     qrCode: {
@@ -19,60 +18,57 @@ const attendanceSchema = new mongoose.Schema(
       required: true,
     },
 
-    // 🔹 Student Info Snapshot (optional but useful for reporting)
-    name: { type: String },
-    rollNumber: { type: String },
-    department: { type: String },
-    subject: { type: String },
+    
+    // 🎯 Subject reference (helps populate data easily)
+    subject: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Subject",
+      required: false,
+    },
 
-    // 🔹 Attendance Details
+    // 📚 Subject name stored for quick display (avoid extra populate)
+    subjectName: {
+      type: String,
+      trim: true,
+    },
+
+    // 🟢 Attendance status
     status: {
       type: String,
       enum: ["Present", "Absent", "Late"],
       default: "Present",
     },
-    remarks: { type: String },
 
-    // 🔹 Time & Date Info
+    remarks: {
+      type: String,
+      trim: true,
+    },
+
+    // 📅 Date & time
     date: {
       type: String,
-      default: () => new Date().toISOString().split("T")[0], // e.g. 2025-10-11
+      default: () => new Date().toISOString().split("T")[0],
     },
     time: {
       type: String,
-      default: () => {
-        const now = new Date();
-        return now.toLocaleTimeString("en-US", {
+      default: () =>
+        new Date().toLocaleTimeString("en-US", {
           hour: "2-digit",
           minute: "2-digit",
-          hour12: true,
-        });
-      },
-    },
-    timestamp: {
-      type: Date,
-      default: Date.now,
+        }),
     },
 
-    // 🔹 Location Info
-    latitude: { type: Number },
-    longitude: { type: Number },
-
-    // 🔹 Selfie Verification
-    selfieImageUrl: { type: String },
-
-    // 🔹 Device Tracking
-    deviceId: { type: String },
-
-    // 🔹 Extra Fields
-    qrCodeToken: { type: String }, // if you want to store QR UUID
+    // 📍 Location and proof
+    latitude: Number,
+    longitude: Number,
+    selfieImageUrl: String,
+    deviceId: String,
+    qrCodeToken: String,
   },
   { timestamps: true }
 );
 
-// ✅ Indexes for faster teacher/student searches
-attendanceSchema.index({ student: 1, date: 1 });
-attendanceSchema.index({ teacher: 1, date: 1 });
-attendanceSchema.index({ qrCode: 1 });
+// 🧠 Optional: prevent duplicate attendance (student + date + subject)
+attendanceSchema.index({ student: 1, date: 1, subject: 1 }, { unique: true });
 
 module.exports = mongoose.model("Attendance", attendanceSchema);

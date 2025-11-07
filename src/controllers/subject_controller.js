@@ -14,7 +14,6 @@ const addSubject = async (req, res) => {
       });
     }
 
-    // 🔍 Check duplicate code
     const existingSubject = await Subject.findOne({ code });
     if (existingSubject) {
       return res.status(409).json({
@@ -23,26 +22,25 @@ const addSubject = async (req, res) => {
       });
     }
 
-    // ✅ Create new subject
     const subject = await Subject.create({
       name,
       code,
       department,
       semester,
       description,
-      createdBy: req.user?.id || null, //  Ensure JWT middleware sets req.user
+      createdBy: req.user?.id || null,
     });
 
-    // 🧩 Populate relations
-    const populatedSubject = await Subject.findById(subject._id)
+    const populated = await Subject.findById(subject._id)
       .populate("department", "name code")
       .populate("semester", "name number")
+      .populate("assignedTeacher", "teacherName email")
       .populate("createdBy", "adminName email");
 
     res.status(201).json({
       success: true,
       message: "✅ Subject created successfully",
-      subject: populatedSubject,
+      subject: populated,
     });
   } catch (error) {
     console.error("Error adding subject:", error);
@@ -95,17 +93,13 @@ const assignTeacherToSubject = async (req, res) => {
     }
 
     const subject = await Subject.findById(subjectId);
-    if (!subject) {
-      return res.status(404).json({
-        success: false,
-        message: "Subject not found",
-      });
-    }
+    if (!subject)
+      return res.status(404).json({ success: false, message: "Subject not found" });
 
     subject.assignedTeacher = teacherId;
     await subject.save();
 
-    const updatedSubject = await Subject.findById(subjectId)
+    const updated = await Subject.findById(subjectId)
       .populate("department", "name")
       .populate("semester", "name number")
       .populate("assignedTeacher", "teacherName email");
@@ -113,7 +107,7 @@ const assignTeacherToSubject = async (req, res) => {
     res.status(200).json({
       success: true,
       message: "👨‍🏫 Teacher assigned successfully",
-      subject: updatedSubject,
+      subject: updated,
     });
   } catch (error) {
     console.error("Error assigning teacher:", error);
@@ -124,8 +118,33 @@ const assignTeacherToSubject = async (req, res) => {
   }
 };
 
+// ============================
+// 📚 Get Assigned Subjects for Teacher
+// ============================
+const getAssignedSubjects = async (req, res) => {
+  try {
+    const teacherId = req.user.id;
+    const subjects = await Subject.find({ assignedTeacher: teacherId })
+      .select("name code _id")
+      .populate("department", "name")
+      .populate("semester", "name number");
+
+    return res.status(200).json({
+      success: true,
+      subjects,
+    });
+  } catch (err) {
+    console.error("Error fetching assigned subjects:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
 module.exports = {
   addSubject,
   getAllSubjects,
   assignTeacherToSubject,
+  getAssignedSubjects,
 };

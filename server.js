@@ -28,10 +28,11 @@ app.use("/api",authController);
 app.use("/api",qrAttendanceRouter);
 
 app.use("/api/admin",departmentRouter);
-app.use("/api/admin",subjectRouter);
+app.use("/api/admin/subjects",subjectRouter);
 
 
 app.use("/api/admin",semesterRouter);
+
 //app.use("/api/auth", authRoutes); // login/logout ke liye
 
 

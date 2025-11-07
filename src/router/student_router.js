@@ -6,4 +6,5 @@ const router = express.Router();
 
 router.get("/profile", authMiddleware, isStudent, registerStudent);
 
+
 module.exports = router;

@@ -23,6 +23,12 @@ const QRCodeSchema = new Schema(
       ref: "Session", // create/adjust Session model as needed
     },
 
+    subject: {
+      type: Schema.Types.ObjectId,
+      ref: "Subject",
+      required: false,
+    },
+
     // Optional human-readable meta
     title: { type: String }, // e.g. "BSCS-6 - 10:00AM"
     description: { type: String },

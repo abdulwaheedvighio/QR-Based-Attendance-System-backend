@@ -36,8 +36,16 @@ const SubjectSchema = new mongoose.Schema(
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Admin",
-      required: false,
+      default: null,
     },
+
+    // 🆕 ✅ Added field for student enrollment
+    enrolledStudents: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Student", // make sure your student model name is "Student"
+      },
+    ],
   },
   { timestamps: true }
 );
