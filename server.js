@@ -9,7 +9,6 @@ const studentRoutes = require("./src/router/student_router");
 const authController = require('./src/router/auth_router');
 const adminRoutes = require("./src/router/admin_routes");
 const chatRoutes = require("./src/router/chat_routes");
-
 const qrAttendanceRouter = require("./src/router/qr_attendance_router");
 const departmentRouter = require('./src/router/department_router');
 const subjectRouter = require("./src/router/subject_router");
