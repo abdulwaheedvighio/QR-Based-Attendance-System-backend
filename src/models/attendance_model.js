@@ -12,6 +12,7 @@ const attendanceSchema = new mongoose.Schema(
       ref: "Teacher",
       required: true,
     },
+    
     qrCode: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "QRCode",
