@@ -64,6 +64,9 @@ const markAbsenteesForQRCode = async (qrDoc, teacherId) => {
 // ======================================================
 // ✅ Generate QR Code (Teacher Side)
 // ======================================================
+// ======================================================
+// ✅ Generate QR Code (Teacher Side)
+// ======================================================
 const generateQRCode = async (req, res) => {
   try {
     if (req.user.role !== "teacher") {
@@ -72,14 +75,15 @@ const generateQRCode = async (req, res) => {
         .json({ success: false, message: "Only teachers can generate QR codes" });
     }
 
-    const { title, subjectId, geo } = req.body;
-    const durationMinutes = 1; // ⏱ 1 minute active window
+    const { title, subjectId } = req.body;
+    const durationMinutes = 1; // ⏱ Active window (1 minute)
 
-    if (!title || !geo?.latitude || !geo?.longitude || !geo?.radiusMeters)
+    if (!title || !subjectId)
       return res
         .status(400)
         .json({ success: false, message: "Missing required fields" });
 
+    // ✅ Find subject assigned to this teacher
     const subject = await SubjectModel.findOne({
       _id: subjectId,
       assignedTeacher: req.user.id,
@@ -92,10 +96,24 @@ const generateQRCode = async (req, res) => {
         .status(403)
         .json({ success: false, message: "This subject is not assigned to you" });
 
-    // ✅ Create QR info
+    // ✅ Fixed University Location (10-meter radius)
+    // const geo = {
+    //   latitude: 26.223084,
+    //   longitude: 68.330521,
+    //   radiusMeters: 40,
+    // };
+
+    const geo = {
+      latitude: 26.2566621,
+      longitude: 68.3934489,
+      radiusMeters: 40,
+    };
+
+    // ✅ Generate token & expiry
     const token = uuidv4();
     const expiresAt = new Date(Date.now() + durationMinutes * 60 * 1000);
 
+    // ✅ Save in DB
     const qrDoc = await QRCodeModel.create({
       token,
       teacher: req.user.id,
@@ -111,7 +129,7 @@ const generateQRCode = async (req, res) => {
     // ✅ Generate QR Image (Base64)
     const qrImage = await QRCode.toDataURL(token);
 
-    // ✅ Schedule Auto Attendance Finalization
+    // ✅ Auto finalize attendance
     setTimeout(async () => {
       await markAbsenteesForQRCode(qrDoc, req.user.id);
     }, durationMinutes * 60 * 1000);
@@ -119,7 +137,7 @@ const generateQRCode = async (req, res) => {
     return res.status(201).json({
       success: true,
       message:
-        "QR generated successfully. Attendance will finalize automatically after 1 minute.",
+        "QR generated successfully (fixed location: 26.2221943, 68.3312279, radius 10m)",
       qr: {
         id: qrDoc._id,
         token,

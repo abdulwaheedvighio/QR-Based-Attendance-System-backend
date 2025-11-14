@@ -13,6 +13,7 @@ const qrAttendanceRouter = require("./src/router/qr_attendance_router");
 const departmentRouter = require('./src/router/department_router');
 const subjectRouter = require("./src/router/subject_router");
 const semesterRouter = require('./src/router/semester_router');
+const AnnouncementRouter = require('./src/router/announcement_router');
 
 dotenv.config();
 const app = express();
@@ -30,6 +31,8 @@ app.use("/api/admin", departmentRouter);
 app.use("/api/admin/subjects", subjectRouter);
 app.use("/api/admin", semesterRouter);
 app.use('/api/chat',chatRoutes);
+app.use('/api/announcement',AnnouncementRouter)
+
 
 // ✅ Create HTTP server and attach Socket.IO
 const server = http.createServer(app);

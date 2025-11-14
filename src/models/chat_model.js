@@ -23,16 +23,16 @@ recieverModel: {
   enum: ["Student", "Teacher"],
 },
 
-    message: {
+message: {
       type: String,
       required: true,
       trim: true,
-    },
-    seen: {
-      type: Boolean,
-      default: false,
-    },
-  },
+},
+seen: {
+    type: Boolean,
+    default: false,
+},
+},
   { timestamps: true }
 );
 
