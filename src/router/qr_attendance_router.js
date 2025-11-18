@@ -7,6 +7,7 @@ const {
   getAttendance,
   getAttendanceSummary, // ✅ Add this line
   deactivateQRCode,     // ✅ Optional (if you want to manually close QR)
+  getAdminAttendanceReport
 } = require("../controllers/qr_attendance_controller");
 
 const { authMiddleware } = require("../middlewares/auth");
@@ -26,6 +27,9 @@ router.get("/get-all-attendance", authMiddleware, getAttendance);
 
 // ✅ Teacher checks attendance summary (Present + Absent)
 router.get("/attendance-summary/:qrId", authMiddleware, getAttendanceSummary); // 👈 Add this
+
+router.get("/admin-report", authMiddleware, getAdminAttendanceReport);
+
 
 // ✅ Teacher manually deactivate QR (optional)
 router.put("/deactivate/:qrId", authMiddleware, deactivateQRCode); // 👈 Optional

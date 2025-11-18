@@ -1,48 +1,70 @@
 const AnnouncementModel = require('../models/announcement_model');
-const TeacherModel = require('../models/teacher_model'); // Import teacher model
+const TeacherModel = require('../models/teacher_model');
 
-// ✅ Create Announcement (For All or Specific Teachers)
+// ===================================================================
+// ✅ Create Announcement
+// ===================================================================
 const createAnnouncement = async (req, res) => {
   try {
-    const { title, message, targetType, targetTeacherIds, createdBy } = req.body;
+    const { title, message, targetType, targetTeacherIds } = req.body;
+    const createdBy = req.user?._id;
 
-    // Validation
+    console.log("📥 Incoming Body:", req.body);
+
     if (!title || !message) {
       return res.status(400).json({
         success: false,
-        message: "Title and message are required.",
+        message: "Title and message are required",
       });
     }
 
     let teacherIds = [];
 
-    // If targetType = "All", fetch all teacher IDs automatically
+    // Convert strings to array
+    let parsedTeacherIds = [];
+    if (typeof targetTeacherIds === "string") {
+      parsedTeacherIds = [targetTeacherIds];
+    } else if (Array.isArray(targetTeacherIds)) {
+      parsedTeacherIds = targetTeacherIds;
+    }
+
+    console.log("👉 Parsed Teacher IDs:", parsedTeacherIds);
+
+    // Target All Teachers
     if (targetType === "All") {
       const allTeachers = await TeacherModel.find({}, "_id");
       teacherIds = allTeachers.map(t => t._id);
     }
 
-    // If targetType = "Teacher", use selected teacher IDs
-    if (targetType === "Teacher" && targetTeacherIds && targetTeacherIds.length > 0) {
-      teacherIds = targetTeacherIds;
+    // Target Specific Teachers
+    if (targetType === "Teacher") {
+      if (!parsedTeacherIds || parsedTeacherIds.length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: "Please select at least one teacher",
+        });
+      }
+      teacherIds = parsedTeacherIds;
     }
 
-    // Create announcement
+    console.log("🔍 Final teacherIds stored:", teacherIds);
+
     const newAnnouncement = await AnnouncementModel.create({
       title,
       message,
-      targetType: targetType || "All",
+      targetType,
       targetTeacherIds: teacherIds,
-      createdBy,
+      createdBy
     });
 
     return res.status(201).json({
       success: true,
-      message: "✅ Announcement created successfully",
+      message: "Announcement created successfully",
       data: newAnnouncement,
     });
+
   } catch (error) {
-    console.error("Error creating announcement:", error);
+    console.error("❌ Error creating announcement:", error);
     res.status(500).json({
       success: false,
       message: `Internal Server Error: ${error.message}`,
@@ -50,10 +72,25 @@ const createAnnouncement = async (req, res) => {
   }
 };
 
-// ✅ Get All Announcements (sorted + populated)
-const getAllAnnouncements = async (req, res) => {
+
+// ===================================================================
+// ✅ Get Teacher Announcements (Perfect)
+// ===================================================================
+const getTeacherAnnouncements = async (req, res) => {
   try {
-    const announcements = await AnnouncementModel.find()
+    const teacherId = req.user._id;
+
+    console.log("👨‍🏫 Teacher ID:", teacherId);
+
+    const announcements = await AnnouncementModel.find({
+      $or: [
+        { targetType: "All" },
+        {
+          targetType: "Teacher",
+          targetTeacherIds: { $in: [teacherId] }  // <-- FIXED!!
+        }
+      ]
+    })
       .populate("createdBy", "name email role")
       .sort({ createdAt: -1 });
 
@@ -62,8 +99,9 @@ const getAllAnnouncements = async (req, res) => {
       count: announcements.length,
       data: announcements,
     });
-  } catch (error) { 
-    console.error("Error fetching announcements:", error);
+
+  } catch (error) {
+    console.error("❌ Error fetching teacher announcements:", error);
     res.status(500).json({
       success: false,
       message: "Error fetching announcements",
@@ -72,4 +110,40 @@ const getAllAnnouncements = async (req, res) => {
   }
 };
 
-module.exports = { createAnnouncement, getAllAnnouncements };
+
+// ===================================================================
+// ✅ Get Student Announcements (Only student & ALL)
+// ===================================================================
+const getStudentAnnouncements = async (req, res) => {
+  try {
+    const announcements = await AnnouncementModel.find({
+      $or: [
+        { targetType: "All" },
+        { targetType: "Student" },
+      ]
+    })
+      .populate("createdBy", "name email role")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      count: announcements.length,
+      data: announcements,
+    });
+
+  } catch (error) {
+    console.error("❌ Error fetching student announcements:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error fetching announcements",
+      error: error.message,
+    });
+  }
+};
+
+
+module.exports = {
+  createAnnouncement,
+  getTeacherAnnouncements,
+  getStudentAnnouncements
+};

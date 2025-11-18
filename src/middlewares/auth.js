@@ -1,7 +1,10 @@
 const jwt = require("jsonwebtoken");
+const TeacherModel = require("../models/teacher_model");
+const AdminModel = require("../models/admin_model");
+const StudentModel = require("../models/student_model");
 
 // 🔹 Auth Middleware - Verify JWT
-const authMiddleware = (req, res, next) => {
+const authMiddleware = async (req, res, next) => {
   try {
     const authHeader = req.headers["authorization"];
     if (!authHeader) {
@@ -21,14 +24,40 @@ const authMiddleware = (req, res, next) => {
 
     // ✅ Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    if (!decoded || !decoded.role) {
+    if (!decoded || !decoded.role || !decoded.id) {
       return res.status(403).json({
         success: false,
-        message: "Token invalid or missing role",
+        message: "Token invalid or missing role/id",
       });
     }
 
-    req.user = decoded; // Contains { id, email, role }
+    // Fetch full user from DB based on role
+    let user;
+    switch (decoded.role) {
+      case "teacher":
+        user = await TeacherModel.findById(decoded.id);
+        break;
+      case "student":
+        user = await StudentModel.findById(decoded.id);
+        break;
+      case "admin":
+        user = await AdminModel.findById(decoded.id);
+        break;
+      default:
+        return res.status(403).json({
+          success: false,
+          message: "Invalid role",
+        });
+    }
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    req.user = user; // ✅ now req.user._id exists
     next();
   } catch (error) {
     let message = "Unauthorized - Invalid token";
@@ -49,7 +78,7 @@ const roleMiddleware = (allowedRoles = []) => {
     if (!req.user || !req.user.role) {
       return res.status(403).json({
         success: false,
-        message: "Forbidden - Role not found in token",
+        message: "Forbidden - Role not found",
       });
     }
 

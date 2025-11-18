@@ -13,19 +13,22 @@ const announcementSchema = new mongoose.Schema({
   },
   targetType: {
     type: String,
-    enum: ['All', 'Teacher'], // 🔥 kis ko bhejni hai
-    default: 'All',
+    enum: ['All', 'Teacher', 'Student'], // ✔ Perfect based on your logic
+    default: 'All'
   },
+
   targetTeacherIds: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Teacher', // ya 'User' if teachers stored in User model
+      ref: 'Teacher', // ✔ Good: correctly referencing Teacher model
     }
   ],
+
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Admin',
+    ref: 'Admin', // ✔ Best practice: Admin who created it
   },
+
   createdAt: {
     type: Date,
     default: Date.now,
